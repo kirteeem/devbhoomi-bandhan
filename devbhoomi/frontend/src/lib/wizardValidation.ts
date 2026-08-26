@@ -37,6 +37,7 @@ const isAtLeast18 = (dobString: string): boolean => {
 // scroll/focus the right field (each field is wrapped in a
 // `data-field-error="<key>"` container in its step component).
 export const FIELD_LABELS: Record<string, string> = {
+  fullName: "Full Name",
   dateOfBirth: "Date of Birth",
   heightCm: "Height",
   maritalStatus: "Marital Status",
@@ -108,11 +109,11 @@ const optionalNumberInRange = (
 // Steps that have at least one field marked required (*) in the UI. Kept in
 // one place so the asterisk shown to the person and the validation that
 // actually blocks Next/Submit can never drift apart again.
-export const REQUIRED_STEPS = [0, 1, 2, 4];
+export const REQUIRED_STEPS = [0, 1, 2, 3];
 
 // Total number of wizard steps — kept here (rather than re-importing the
 // STEPS array from the page) just for the final full-scan below.
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 4;
 
 /**
  * Validates a single wizard step. Two kinds of checks happen here, and
@@ -130,7 +131,8 @@ export const validateStep = (step: number, data: WizardFormData): WizardErrors =
   const draft: Record<string, string | undefined> = {};
 
   if (step === 0) {
-    // Personal details
+    // Personal details + location
+    draft.fullName = required((data as any).fullName, "fullName");
     draft.dateOfBirth =
       required(data.dateOfBirth, "dateOfBirth") ||
       (isAtLeast18(data.dateOfBirth) ? undefined : "You must be at least 18 years old to create a profile.");
@@ -138,10 +140,6 @@ export const validateStep = (step: number, data: WizardFormData): WizardErrors =
       required(data.heightCm, "heightCm") ||
       optionalNumberInRange(data.heightCm, 100, 250, "Height must be between 100cm and 250cm.");
     draft.maritalStatus = required(data.maritalStatus, "maritalStatus");
-  }
-
-  if (step === 1) {
-    // Location
     draft.district = required(data.district, "district");
     if (data.district === "Other") {
       draft.customDistrict = required(data.customDistrict, "customDistrict");
@@ -150,15 +148,10 @@ export const validateStep = (step: number, data: WizardFormData): WizardErrors =
     draft.address = required(data.address, "address");
   }
 
-  if (step === 2) {
-    // Education & career
+  if (step === 1) {
+    // Education & career + family
     draft["education.degree"] = required(data.education?.degree, "education.degree");
     draft["occupation.title"] = required(data.occupation?.title, "occupation.title");
-  }
-
-  if (step === 3) {
-    // Family details — every field here is optional; siblings just needs to
-    // be a sane number if the member enters one (backend: min 0, max 20).
     draft["family.siblings"] = optionalNumberInRange(
       data.family?.siblings,
       0,
@@ -167,17 +160,12 @@ export const validateStep = (step: number, data: WizardFormData): WizardErrors =
     );
   }
 
-  if (step === 4) {
-    // Religion & horoscope
+  if (step === 2) {
+    // Religion, lifestyle & partner preference
     draft.religion = required(data.religion, "religion");
     if (data.religion === "Hindu") {
       draft.caste = required(data.caste, "caste");
     }
-  }
-
-  if (step === 6) {
-    // Partner preference — entirely optional, but any value provided must
-    // be within the same bounds the backend enforces.
     draft["partnerPreference.ageMin"] = optionalNumberInRange(
       data.partnerPreference?.ageMin,
       18,
@@ -205,6 +193,11 @@ export const validateStep = (step: number, data: WizardFormData): WizardErrors =
       250,
       "Minimum preferred height must be between 100cm and 250cm."
     );
+  }
+
+  if (step === 3) {
+    // Photos and review step — no extra required fields here beyond the
+    // full-scan performed before final submit.
   }
 
   // Only keys that actually failed make it into the returned errors object.

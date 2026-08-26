@@ -21,15 +21,10 @@ import { Step8Photos } from "../components/wizard/steps/Step8Photos";
 import { Step9Review } from "../components/wizard/steps/Step9Review";
 
 const STEPS = [
-  { id: 0, title: "Personal Info" },
-  { id: 1, title: "Living Location" },
-  { id: 2, title: "Career & Education" },
-  { id: 3, title: "Family Heritage" },
-  { id: 4, title: "Spiritual Values" },
-  { id: 5, title: "Lifestyle Choices" },
-  { id: 6, title: "Partner Match" },
-  { id: 7, title: "Visual Portrait" },
-  { id: 8, title: "Curated Review" },
+  { id: 0, title: "Personal & Location" },
+  { id: 1, title: "Career & Family" },
+  { id: 2, title: "Values & Preferences" },
+  { id: 3, title: "Photos & Review" },
 ];
 
 export const ProfileWizard = () => {
@@ -148,6 +143,10 @@ export const ProfileWizard = () => {
       try {
         const result = await updateMyProfile(data);
         syncCompletionToAuth(result.profileCompletion);
+        const updatedName = result.profile?.user?.fullName || data.fullName;
+        if (user && updatedName) {
+          updateUser({ ...user, fullName: updatedName, profileCompletion: result.profileCompletion });
+        }
         showToast("Portfolio published successfully 🎉");
         setTimeout(() => navigate("/dashboard"), 1200);
       } catch (err: any) {
@@ -232,6 +231,10 @@ export const ProfileWizard = () => {
               setIsSaving(true);
               updateMyProfile(data).then((result) => {
                 syncCompletionToAuth(result.profileCompletion);
+                const updatedName = result.profile?.user?.fullName || data.fullName;
+                if (user && updatedName) {
+                  updateUser({ ...user, fullName: updatedName, profileCompletion: result.profileCompletion });
+                }
                 showToast("Draft saved securely");
                 setIsSaving(false);
               });
@@ -263,22 +266,36 @@ export const ProfileWizard = () => {
               transition={{ duration: 0.15 }}
               className="w-full"
             >
-              {step === 0 && <Step1Personal {...stepProps} />}
-              {step === 1 && <Step2Location {...stepProps} />}
-              {step === 2 && <Step3Education {...stepProps} />}
-              {step === 3 && <Step4Family {...stepProps} />}
-              {step === 4 && <Step5Religion {...stepProps} />}
-              {step === 5 && <Step6Lifestyle {...stepProps} />}
-              {step === 6 && <Step7PartnerPreference {...stepProps} />}
-              {step === 7 && (
-                <Step8Photos 
-                  data={data} 
-                  updateData={update} 
-                  existingPhotos={photos as any[]} 
-                  onPhotosChange={setPhotos as any} 
-                />
+              {step === 0 && (
+                <div className="space-y-8">
+                  <Step1Personal {...stepProps} />
+                  <Step2Location {...stepProps} />
+                </div>
               )}
-              {step === 8 && <Step9Review data={data} photos={photos} onEditStep={(s) => setStep(s)} />}
+              {step === 1 && (
+                <div className="space-y-8">
+                  <Step3Education {...stepProps} />
+                  <Step4Family {...stepProps} />
+                </div>
+              )}
+              {step === 2 && (
+                <div className="space-y-8">
+                  <Step5Religion {...stepProps} />
+                  <Step6Lifestyle {...stepProps} />
+                  <Step7PartnerPreference {...stepProps} />
+                </div>
+              )}
+              {step === 3 && (
+                <div className="space-y-8">
+                  <Step8Photos
+                    data={data}
+                    updateData={update}
+                    existingPhotos={photos as any[]}
+                    onPhotosChange={setPhotos as any}
+                  />
+                  <Step9Review data={data} photos={photos} onEditStep={(s) => setStep(s)} />
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

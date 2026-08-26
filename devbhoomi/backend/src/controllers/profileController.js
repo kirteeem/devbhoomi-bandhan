@@ -36,6 +36,7 @@ export const updateProfileSchema = z.object({
   district: z.enum(["Shimla", "Mandi", "Kullu", "Kangra", "Hamirpur", "Una", "Bilaspur", "Solan", "Sirmaur", "Chamba", "Kinnaur", "Lahaul-Spiti", "Other"]).optional(),
   // Only meaningful when district === "Other" — see models/Profile.js.
   customDistrict: z.string().max(100).optional(),
+  fullName: z.string().max(100).optional(),
   tehsil: z.string().max(100).optional(),
   village: z.string().max(100).optional(),
   city: z.string().max(100).optional(),
@@ -162,14 +163,23 @@ export const getProfileByCode = asyncHandler(async (req, res) => {
 export const updateMyProfile = asyncHandler(async (req, res) => {
   // Enforce Zod validation structure and safety
   const validatedUpdates = updateProfileSchema.parse(stripEmptyStrings(req.body));
+  const nextFullName = validatedUpdates.fullName?.trim();
+  if (nextFullName) {
+    req.user.fullName = nextFullName;
+    await req.user.save({ validateBeforeSave: false });
+  }
+  delete validatedUpdates.fullName;
 
   let profile = await Profile.findOneAndUpdate(
     { user: req.user._id }, 
-    { $set: validatedUpdates }, 
+    { $set: { ...validatedUpdates, name: req.user.fullName } }, 
     { new: true, upsert: true }
   );
 
   const completion = await recalculateAndPersistCompletion(profile, User);
+  const populatedProfile = await Profile.findById(profile._id)
+    .populate("user", "fullName gender role profileCompletion profileCode phone")
+    .lean();
 
   // First time this profile is (near) fully complete, ask the priest /
   // verification team to manually cross-check the member's identity. Only
@@ -189,7 +199,7 @@ export const updateMyProfile = asyncHandler(async (req, res) => {
   // field too, so the frontend can pluck a single number straight off the
   // response and push it into the logged-in user's cached state without
   // needing to know the shape of the profile document.
-  ok(res, { profile, profileCompletion: completion }, "Profile updated");
+  ok(res, { profile: populatedProfile || profile, profileCompletion: completion }, "Profile updated");
 });
 
 // GET /api/profiles/:userId/contact

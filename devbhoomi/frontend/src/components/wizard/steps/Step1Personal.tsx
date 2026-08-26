@@ -30,6 +30,21 @@ export const Step1Personal = ({ data, update, errors }: Props) => {
   return (
     <div className="space-y-6 w-full text-[#1A1A1A] pr-1">
       
+      {/* 0. PROFILE NAME */}
+      <div className="space-y-1.5">
+        <TextField
+          label="Full Name"
+          type="text"
+          required
+          value={data.fullName || user?.fullName || ""}
+          error={errors.fullName}
+          onChange={(e) => update({ fullName: e.target.value })}
+        />
+        <p className="text-[11px] text-zinc-400 font-medium pl-1">
+          This name will be shown across your profile and account.
+        </p>
+      </div>
+
       {/* 1. REGISTERED PHONE */}
       <div className="space-y-1.5">
         <label className="text-xs font-bold text-zinc-400 tracking-wide uppercase">Registered Mobile Number</label>

@@ -4,6 +4,7 @@
  * sent to PATCH /api/profiles/me without any remapping.
  */
 export interface WizardFormData {
+  fullName: string;
   // Step 1 — Personal Details
   dateOfBirth: string; // "YYYY-MM-DD"
   heightCm: number | "";
@@ -84,6 +85,7 @@ export const HP_DISTRICTS = [
 ];
 
 export const emptyWizardData: WizardFormData = {
+  fullName: "",
   dateOfBirth: "",
   heightCm: "",
   maritalStatus: "",

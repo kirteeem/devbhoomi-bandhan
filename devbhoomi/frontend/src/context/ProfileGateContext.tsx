@@ -4,7 +4,7 @@ import { ShieldAlert, X } from "lucide-react";
 import { useAuth } from "./AuthContext";
 
 interface ProfileGateContextValue {
-  /** true if the viewer's own profile is at least 80% complete */
+  /** true if the viewer's own profile is at least 50% complete */
   isBrowsingAllowed: boolean;
   /** Call before navigating to a profile / matches list. Returns true if navigation should proceed. */
   guardBrowse: () => boolean;
@@ -18,9 +18,8 @@ export const ProfileGateProvider = ({ children }: { children: ReactNode }) => {
 
   const completion = user?.profileCompletion ?? 0;
   // Photos are optional (a default avatar is shown when missing), so
-  // browsing only requires a substantially-complete profile — not 100%
-  // and not a photo.
-  const isBrowsingAllowed = !user || completion >= 80;
+  // browsing only requires a half-complete profile — not 100%.
+  const isBrowsingAllowed = !user || completion >= 50;
 
   const guardBrowse = () => {
     if (isBrowsingAllowed) return true;
@@ -79,8 +78,8 @@ const CompleteProfileModal = ({
           Complete Your Profile to Browse
         </h3>
         <p className="mt-2 text-sm leading-relaxed text-neutral-500">
-          You need at least an <span className="font-semibold text-[#1A1A1A]">80% complete profile</span> before you
-          can browse other members. A profile photo is optional — we'll show a default avatar if you skip it.
+          You need at least an <span className="font-semibold text-[#1A1A1A]">50% complete profile</span> before you
+          can browse other members. You can see profile after completing 50%.
         </p>
 
         <div className="mt-4 rounded-xl bg-[#FAF8F5] p-4">
@@ -95,7 +94,7 @@ const CompleteProfileModal = ({
             />
           </div>
           <p className="mt-2 text-[11px] font-medium text-neutral-500">
-            {Math.max(0, 80 - completion)}% more to go before you can browse.
+            {Math.max(0, 50 - completion)}% more to go before you can browse.
           </p>
         </div>
 

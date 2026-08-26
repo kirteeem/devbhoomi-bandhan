@@ -3,6 +3,7 @@ import { emptyWizardData } from "../types/wizard";
 
 /** Merges whatever the backend profile document has into the wizard's full shape, so partial/legacy profiles never crash the form. */
 export const profileToWizardData = (profile: any): WizardFormData => ({
+  fullName: profile?.user?.fullName ?? "",
   dateOfBirth: profile?.dateOfBirth ? String(profile.dateOfBirth).slice(0, 10) : "",
   heightCm: profile?.heightCm ?? "",
   maritalStatus: profile?.maritalStatus ?? "",

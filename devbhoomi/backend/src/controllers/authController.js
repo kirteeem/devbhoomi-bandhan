@@ -171,6 +171,22 @@ const issueSignupPhoneToken = (phone) =>
     expiresIn: SIGNUP_PHONE_TOKEN_TTL,
   });
 
+const deriveDisplayName = ({ fullName, email, phone, fallback = "Member" } = {}) => {
+  const cleaned = String(fullName || "").trim();
+  if (cleaned && cleaned.toLowerCase() !== "new user") return cleaned;
+
+  const emailName = String(email || "").split("@")[0].replace(/[._-]+/g, " ").trim();
+  if (emailName) {
+    return emailName
+      .split(/\s+/)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
+  const phoneTail = String(phone || "").replace(/\D/g, "").slice(-4);
+  return phoneTail ? `${fallback} ${phoneTail}` : fallback;
+};
+
 // POST /api/auth/signup/email-otp/request
 export const requestSignupEmailOtp = asyncHandler(async (req, res) => {
   const { email } = signupEmailOtpRequestSchema.parse(req.body);
@@ -387,7 +403,7 @@ export const verifyOtpAndLogin = asyncHandler(async (req, res) => {
   let user = await User.findOne(lookup);
   if (!user) {
     user = await User.create({
-      fullName: fullName || "New User",
+      fullName: deriveDisplayName({ fullName, email: channel === "email" ? identifier : undefined, phone: channel === "sms" ? identifier : undefined }),
       ...lookup,
       authProvider: "otp",
       ...(channel === "email" ? { isEmailVerified: true } : { isPhoneVerified: true }),
@@ -398,6 +414,16 @@ export const verifyOtpAndLogin = asyncHandler(async (req, res) => {
     await user.save({ validateBeforeSave: false });
   } else if (channel === "sms" && !user.isPhoneVerified) {
     user.isPhoneVerified = true;
+    await user.save({ validateBeforeSave: false });
+  }
+
+  const displayName = deriveDisplayName({
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+  });
+  if (displayName !== user.fullName) {
+    user.fullName = displayName;
     await user.save({ validateBeforeSave: false });
   }
 
@@ -495,7 +521,7 @@ export const googleLogin = asyncHandler(async (req, res) => {
   let user = await User.findOne({ $or: [{ googleId }, { email }] });
   if (!user) {
     user = await User.create({
-      fullName: fullName || "New User",
+      fullName: deriveDisplayName({ fullName, email }),
       email,
       googleId,
       authProvider: "google",
@@ -505,6 +531,12 @@ export const googleLogin = asyncHandler(async (req, res) => {
   } else if (!user.googleId) {
     user.googleId = googleId;
     if (emailVerified) user.isEmailVerified = true;
+    await user.save({ validateBeforeSave: false });
+  }
+
+  const googleDisplayName = deriveDisplayName({ fullName: user.fullName, email: user.email });
+  if (googleDisplayName !== user.fullName) {
+    user.fullName = googleDisplayName;
     await user.save({ validateBeforeSave: false });
   }
 

@@ -104,12 +104,12 @@ export const Step9Review = ({ data, photos, onEditStep }: Props) => {
         
         {/* DISCRETE HORIZONTAL PROGRESS CHIPS */}
         <div className="mt-4 flex flex-wrap items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-neutral-400">
-          {["Personal", "Family", "Education", "Career", "Lifestyle", "Preferences", "Photos"].map((step, idx) => (
+          {["Personal & Location", "Career & Family", "Values & Preferences", "Photos & Review"].map((step, idx) => (
             <div key={`step-chip-${idx}`} className="flex items-center gap-1.5">
               <span className="text-[#2E6F57] bg-[#2E6F57]/5 px-2 py-0.5 rounded-md border border-[#2E6F57]/10 font-mono">
                 {idx + 1}. {step} ✓
               </span>
-              {idx < 6 && <span className="text-neutral-300 font-light">•</span>}
+              {idx < 3 && <span className="text-neutral-300 font-light">•</span>}
             </div>
           ))}
         </div>
@@ -123,7 +123,7 @@ export const Step9Review = ({ data, photos, onEditStep }: Props) => {
           <div className="grid gap-5 sm:grid-cols-2">
             
             <ReviewSection title="Personal Information" icon={UserRound} stepId={0} onEdit={onEditStep}>
-              <ReviewRow label="Full Name" value={data.aboutMe ? "Profile User" : "—"} />
+              <ReviewRow label="Full Name" value={(data as any).fullName || "—"} />
               <ReviewRow label="Date of Birth" value={data.dateOfBirth} />
               <ReviewRow label="Age" value={data.dateOfBirth ? `${calculatedAge} Years` : "—"} />
               <ReviewRow label="Height" value={data.heightCm ? `${data.heightCm} cm` : "—"} />
@@ -146,21 +146,21 @@ export const Step9Review = ({ data, photos, onEditStep }: Props) => {
               <ReviewRow label="Annual Income" value={data.occupation?.annualIncomeRange} />
             </ReviewSection>
 
-            <ReviewSection title="Family Details" icon={Home} stepId={3} onEdit={onEditStep}>
+            <ReviewSection title="Family Details" icon={Home} stepId={1} onEdit={onEditStep}>
               <ReviewRow label="Family Type" value={data.family?.familyType} />
               <ReviewRow label="Family Values" value={data.family?.familyValues} />
               <ReviewRow label="Siblings" value={data.family?.siblings} />
               <ReviewRow label="Origin Context" value="Traditional / Clean Background" />
             </ReviewSection>
 
-            <ReviewSection title="Religion & Horoscope" icon={Sparkles} stepId={4} onEdit={onEditStep}>
+            <ReviewSection title="Religion & Horoscope" icon={Sparkles} stepId={2} onEdit={onEditStep}>
               <ReviewRow label="Religion" value={data.religion || "Hindu"} />
               <ReviewRow label="Caste / Gotra" value={data.caste} />
               <ReviewRow label="Rashi" value={data.horoscope?.rashi} />
               <ReviewRow label="Manglik Status" value={data.manglik?.replace(/_/g, " ")} />
             </ReviewSection>
 
-            <ReviewSection title="Lifestyle" icon={Heart} stepId={5} onEdit={onEditStep}>
+            <ReviewSection title="Lifestyle" icon={Heart} stepId={2} onEdit={onEditStep}>
               <ReviewRow label="Dietary Preference" value={data.lifestyle?.diet?.replace(/_/g, " ")} />
               <ReviewRow label="Smoking" value={data.lifestyle?.drinking} />
               <ReviewRow label="Drinking" value={data.lifestyle?.drinking} />
@@ -168,7 +168,7 @@ export const Step9Review = ({ data, photos, onEditStep }: Props) => {
             </ReviewSection>
           </div>
 
-          <ReviewSection title="Partner Preferences" icon={Heart} stepId={6} onEdit={onEditStep}>
+          <ReviewSection title="Partner Preferences" icon={Heart} stepId={2} onEdit={onEditStep}>
             <div className="grid gap-x-6 sm:grid-cols-2">
               <ReviewRow label="Preferred Age" value={data.partnerPreference?.ageMin && data.partnerPreference?.ageMax ? `${data.partnerPreference?.ageMin}–${data.partnerPreference?.ageMax} Yrs` : "Open"} />
               <ReviewRow label="Preferred Height" value={data.partnerPreference?.heightMinCm ? `From ${data.partnerPreference?.heightMinCm} cm` : "Open"} />
@@ -178,7 +178,7 @@ export const Step9Review = ({ data, photos, onEditStep }: Props) => {
           </ReviewSection>
 
           {/* PHOTO MEDIA GALLERY */}
-          <ReviewSection title="Uploaded Media Gallery" icon={Camera} stepId={7} onEdit={onEditStep}>
+          <ReviewSection title="Uploaded Media Gallery" icon={Camera} stepId={3} onEdit={onEditStep}>
             <div className="mb-3 flex items-center justify-between text-[11px] font-medium text-neutral-400">
               <span>Attached Items: <strong className="font-mono text-neutral-700">{photos.length}</strong></span>
               <span>Visibility: <strong className="text-[#7B1E3D] uppercase tracking-wide">{data.visibility?.replace(/_/g, " ")}</strong></span>
